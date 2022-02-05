@@ -8,7 +8,7 @@ import java.io.Serializable
 import java.util.*
 
 
-class Emoji(
+open class Emoji(
     codePoints: IntArray, shortcodes: Array<String?>,
     @DrawableRes val resource: Int, isDuplicate: Boolean,
     vararg variants: Emoji
@@ -64,7 +64,7 @@ class Emoji(
         return variants.isNotEmpty()
     }
 
-    fun destroy() {
+    open fun destroy() {
         // For inheritors to override.
     }
 
