@@ -11,7 +11,7 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/ComposeEmojiLibrary" />
-            <option value="$PROJECT_DIR$/IOS-Emoji" />
+            <option value="$PROJECT_DIR$/Ios-Emoji" />
             <option value="$PROJECT_DIR$/app" />
           </set>
         </option>
