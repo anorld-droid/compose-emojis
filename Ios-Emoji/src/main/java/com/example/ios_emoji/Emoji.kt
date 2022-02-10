@@ -1,4 +1,4 @@
-package com.example.composeemojilibrary
+package com.example.ios_emoji
 
 import android.content.Context
 import android.graphics.drawable.Drawable
