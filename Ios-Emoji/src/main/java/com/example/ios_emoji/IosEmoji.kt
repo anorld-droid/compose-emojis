@@ -7,8 +7,7 @@ import android.graphics.BitmapFactory
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.util.LruCache
-import com.example.composeemojilibrary.CacheKey
-import com.example.composeemojilibrary.Emoji
+import com.example.composeemojilibrary.emoji.CacheKey
 import java.lang.ref.SoftReference
 
 
