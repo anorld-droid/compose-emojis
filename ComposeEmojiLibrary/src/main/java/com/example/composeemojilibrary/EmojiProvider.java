@@ -19,8 +19,6 @@ package com.example.composeemojilibrary;
 
 import androidx.annotation.NonNull;
 
-import com.example.composeemojilibrary.emoji.EmojiCategory;
-
 /**
  * Interface for a custom emoji implementation that can be used with {@link EmojiManager}.
  *

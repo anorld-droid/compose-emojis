@@ -14,31 +14,26 @@
  * limitations under the License.
  *
  */
+package com.example.composeemojilibrary
 
-package com.example.ios_emoji;
-
-import androidx.annotation.NonNull;
-import java.util.Collection;
-import java.util.Collections;
+import com.example.composeemojilibrary.emoji.Emoji
 
 /**
  * Use this class to hide recent Emoji.
  */
-public final class NoRecentEmoji implements RecentEmoji {
-  public static final RecentEmoji INSTANCE = new NoRecentEmoji();
+class NoRecentEmoji private constructor() : RecentEmoji {
+    override val recentEmojis: Collection<Emoji>
+        get() = emptyList()
 
-  private NoRecentEmoji() {
-  }
+    override fun addEmoji(emoji: Emoji) {
+        // Do nothing.
+    }
 
-  @NonNull @Override public Collection<IosEmoji> getRecentEmojis() {
-    return Collections.emptyList();
-  }
+    override fun persist() {
+        // Do nothing.
+    }
 
-  @Override public void addEmoji(@NonNull final IosEmoji emoji) {
-    // Do nothing.
-  }
-
-  @Override public void persist() {
-    // Do nothing.
-  }
+    companion object {
+        val INSTANCE: RecentEmoji = NoRecentEmoji()
+    }
 }

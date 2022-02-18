@@ -14,153 +14,120 @@
  * limitations under the License.
  *
  */
+package com.example.composeemojilibrary
 
-package com.example.ios_emoji;
+import android.content.Context
+import android.content.SharedPreferences
+import com.example.composeemojilibrary.EmojiManager.Companion.instance
+import com.example.composeemojilibrary.emoji.Emoji
+import java.util.*
 
-import android.content.Context;
-import android.content.SharedPreferences;
-import androidx.annotation.NonNull;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.StringTokenizer;
-
-public final class RecentEmojiManager implements RecentEmoji {
-  private static final String PREFERENCE_NAME = "emoji-recent-manager";
-  private static final String TIME_DELIMITER = ";";
-  private static final String EMOJI_DELIMITER = "~";
-  private static final String RECENT_EMOJIS = "recent-emojis";
-  static final int EMOJI_GUESS_SIZE = 5;
-  static final int MAX_RECENTS = 40;
-
-  @NonNull private EmojiList emojiList = new EmojiList(0);
-  @NonNull private final SharedPreferences sharedPreferences;
-
-  public RecentEmojiManager(@NonNull final Context context) {
-    sharedPreferences = context.getApplicationContext().getSharedPreferences(PREFERENCE_NAME, Context.MODE_PRIVATE);
-  }
-
-  @Override @SuppressWarnings({ "PMD.AvoidDeeplyNestedIfStmts", "checkstyle:nestedifdepth" }) @NonNull public Collection<IosEmoji> getRecentEmojis() {
-    if (emojiList.size() == 0) {
-      final String savedRecentEmojis = sharedPreferences.getString(RECENT_EMOJIS, "");
-
-      if (savedRecentEmojis.length() > 0) {
-        final StringTokenizer stringTokenizer = new StringTokenizer(savedRecentEmojis, EMOJI_DELIMITER);
-        emojiList = new EmojiList(stringTokenizer.countTokens());
-
-        while (stringTokenizer.hasMoreTokens()) {
-          final String token = stringTokenizer.nextToken();
-
-          final String[] parts = token.split(TIME_DELIMITER);
-
-          if (parts.length == 2) {
-            final Emoji emoji = EmojiManager.getInstance().findEmoji(parts[0]);
-
-            if (emoji != null && emoji.getLength() == parts[0].length()) {
-              final long timestamp = Long.parseLong(parts[1]);
-
-              emojiList.add(emoji, timestamp);
+class RecentEmojiManager(context: Context) : RecentEmoji {
+    private var emojiList = EmojiList(0)
+    private val sharedPreferences: SharedPreferences
+    override val recentEmojis: Collection<Emoji>
+        get() {
+            if (emojiList.size() == 0) {
+                val savedRecentEmojis = sharedPreferences.getString(RECENT_EMOJIS, "")
+                if (savedRecentEmojis!!.isNotEmpty()) {
+                    val stringTokenizer = StringTokenizer(savedRecentEmojis, EMOJI_DELIMITER)
+                    emojiList = EmojiList(stringTokenizer.countTokens())
+                    while (stringTokenizer.hasMoreTokens()) {
+                        val token = stringTokenizer.nextToken()
+                        val parts = token.split(TIME_DELIMITER.toRegex()).toTypedArray()
+                        if (parts.size == 2) {
+                            val emoji: Emoji? = instance.findEmoji(parts[0])
+                            if (emoji != null && emoji.length == parts[0].length) {
+                                val timestamp = parts[1].toLong()
+                                emojiList.add(emoji, timestamp)
+                            }
+                        }
+                    }
+                } else {
+                    emojiList = EmojiList(0)
+                }
             }
-          }
+            return emojiList.getEmojis()
         }
-      } else {
-        emojiList = new EmojiList(0);
-      }
+
+    override fun addEmoji(emoji: Emoji) {
+        emojiList.add(emoji)
     }
 
-    return emojiList.getEmojis();
-  }
-
-  @Override public void addEmoji(@NonNull final IosEmoji emoji) {
-    emojiList.add(emoji);
-  }
-
-  @Override public void persist() {
-    if (emojiList.size() > 0) {
-      final StringBuilder stringBuilder = new StringBuilder(emojiList.size() * EMOJI_GUESS_SIZE);
-
-      for (int i = 0; i < emojiList.size(); i++) {
-        final Data data = emojiList.get(i);
-        stringBuilder.append(data.emoji.getUnicode())
-            .append(TIME_DELIMITER)
-            .append(data.timestamp)
-            .append(EMOJI_DELIMITER);
-      }
-
-      stringBuilder.setLength(stringBuilder.length() - EMOJI_DELIMITER.length());
-
-      sharedPreferences.edit().putString(RECENT_EMOJIS, stringBuilder.toString()).apply();
-    }
-  }
-
-  static class EmojiList {
-    static final Comparator<Data> COMPARATOR = new Comparator<Data>() {
-      @Override public int compare(final Data lhs, final Data rhs) {
-        return Long.valueOf(rhs.timestamp).compareTo(lhs.timestamp);
-      }
-    };
-
-    @NonNull final List<Data> emojis;
-
-    EmojiList(final int size) {
-      emojis = new ArrayList<>(size);
-    }
-
-    void add(final Emoji emoji) {
-      add(emoji, System.currentTimeMillis());
-    }
-
-    void add(final Emoji emoji, final long timestamp) {
-      final Iterator<Data> iterator = emojis.iterator();
-
-      final Emoji emojiBase = emoji.getBase();
-
-      while (iterator.hasNext()) {
-        final Data data = iterator.next();
-        if (data.emoji.getBase().equals(emojiBase)) { // Do the comparison by base so that skin tones are only saved once.
-          iterator.remove();
+    override fun persist() {
+        if (emojiList.size() > 0) {
+            val stringBuilder = StringBuilder(emojiList.size() * EMOJI_GUESS_SIZE)
+            for (i in 0 until emojiList.size()) {
+                val data = emojiList[i]
+                stringBuilder.append(data.emoji.unicode)
+                    .append(TIME_DELIMITER)
+                    .append(data.timestamp)
+                    .append(EMOJI_DELIMITER)
+            }
+            stringBuilder.setLength(stringBuilder.length - EMOJI_DELIMITER.length)
+            sharedPreferences.edit().putString(RECENT_EMOJIS, stringBuilder.toString()).apply()
         }
-      }
-
-      emojis.add(0, new Data(emoji, timestamp));
-
-      if (emojis.size() > MAX_RECENTS) {
-        emojis.remove(MAX_RECENTS);
-      }
     }
 
-    Collection<Emoji> getEmojis() {
-      Collections.sort(emojis, COMPARATOR);
+    internal class EmojiList(size: Int) {
+        val emojis: MutableList<Data>
+        @JvmOverloads
+        fun add(emoji: Emoji, timestamp: Long = System.currentTimeMillis()) {
+            val iterator = emojis.iterator()
+            val emojiBase = emoji.getBase()
+            while (iterator.hasNext()) {
+                val data = iterator.next()
+                if (data.emoji.getBase() == emojiBase
+                ) { // Do the comparison by base so that skin tones are only saved once.
+                    iterator.remove()
+                }
+            }
+            emojis.add(0, Data(emoji, timestamp))
+            if (emojis.size > MAX_RECENTS) {
+                emojis.removeAt(MAX_RECENTS)
+            }
+        }
 
-      final Collection<Emoji> sortedEmojis = new ArrayList<>(emojis.size());
+        fun getEmojis(): Collection<Emoji> {
+            Collections.sort(emojis, COMPARATOR)
+            val sortedEmojis: MutableCollection<Emoji> = ArrayList(emojis.size)
+            for (data in emojis) {
+                sortedEmojis.add(data.emoji)
+            }
+            return sortedEmojis
+        }
 
-      for (final Data data : emojis) {
-        sortedEmojis.add(data.emoji);
-      }
+        fun size(): Int {
+            return emojis.size
+        }
 
-      return sortedEmojis;
+        operator fun get(index: Int): Data {
+            return emojis[index]
+        }
+
+        companion object {
+            val COMPARATOR = Comparator<Data> { lhs, rhs ->
+                java.lang.Long.valueOf(rhs.timestamp).compareTo(lhs.timestamp)
+            }
+        }
+
+        init {
+            emojis = ArrayList(size)
+        }
     }
 
-    int size() {
-      return emojis.size();
+    internal class Data(val emoji: Emoji, val timestamp: Long)
+    companion object {
+        private const val PREFERENCE_NAME = "emoji-recent-manager"
+        private const val TIME_DELIMITER = ";"
+        private const val EMOJI_DELIMITER = "~"
+        private const val RECENT_EMOJIS = "recent-emojis"
+        const val EMOJI_GUESS_SIZE = 5
+        const val MAX_RECENTS = 40
     }
 
-    Data get(final int index) {
-      return emojis.get(index);
+    init {
+        sharedPreferences =
+            context.applicationContext.getSharedPreferences(PREFERENCE_NAME, Context.MODE_PRIVATE)
     }
-  }
-
-  static class Data {
-    final Emoji emoji;
-    final long timestamp;
-
-    Data(final Emoji emoji, final long timestamp) {
-      this.emoji = emoji;
-      this.timestamp = timestamp;
-    }
-  }
 }

@@ -14,7 +14,9 @@
  * limitations under the License.
  *
  */
-package com.example.ios_emoji
+package com.example.composeemojilibrary
+
+import com.example.composeemojilibrary.emoji.Emoji
 
 
 /**
@@ -32,7 +34,7 @@ interface RecentEmoji {
      *
      * @since 0.2.0
      */
-    val recentEmojis: Collection<IosEmoji?>
+    val recentEmojis: Collection<Emoji?>
 
     /**
      * Should add the emoji to the recent ones. After calling this method, [.getRecentEmojis]
@@ -40,7 +42,7 @@ interface RecentEmoji {
      *
      * @since 0.2.0
      */
-    fun addEmoji(emoji: IosEmoji)
+    fun addEmoji(emoji: Emoji)
 
     /**
      * Should persist all emojis.

@@ -1,17 +1,18 @@
-package com.example.ios_emoji
+package com.example.composeemojilibrary
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import com.example.composeemojilibrary.emoji.Emoji
 
 
 /**
  * Interface for defining a category.
  */
-interface IosEmojiCategory {
+interface EmojiCategory {
     /**
      * Returns all of the emojis it can display.
      */
-    val emojis: Array<IosEmoji>
+    val emojis: Array<Emoji>
 
     /**
      * Returns the icon of the category that should be displayed.

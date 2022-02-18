@@ -1,4 +1,4 @@
-package com.example.ios_emoji
+package com.example.composeemojilibrary.emoji
 
 import android.content.Context
 import android.graphics.drawable.Drawable
@@ -17,7 +17,7 @@ open class Emoji(
     private val shortcodes: Array<String?>
 
 
-    private val isDuplicate: Boolean
+    val isDuplicate: Boolean
     private val variants: List<Emoji>
     private var base: Emoji? = null
 
@@ -41,8 +41,8 @@ open class Emoji(
         return listOf(*shortcodes)
     }
 
-    private fun getDrawable(context: Context?): Drawable {
-        return AppCompatResources.getDrawable(context!!, resource)!!
+    open fun getDrawable(context: Context): Drawable {
+        return AppCompatResources.getDrawable(context, resource)!!
     }
 
     fun getVariants(): List<Emoji> {

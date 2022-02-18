@@ -14,208 +14,195 @@
  * limitations under the License.
  *
  */
+package com.example.composeemojilibrary
 
-package com.example.ios_emoji;
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
+import android.content.res.Configuration
+import android.graphics.Point
+import android.graphics.Rect
+import android.util.AttributeSet
+import android.util.TypedValue
+import android.view.KeyEvent
+import android.view.View
+import android.view.inputmethod.EditorInfo
+import android.widget.EditText
+import android.widget.PopupWindow
+import android.widget.TextView
+import androidx.annotation.AttrRes
+import androidx.annotation.ColorInt
+import androidx.annotation.ColorRes
+import androidx.core.content.ContextCompat
+import com.example.composeemojilibrary.EmojiManager.Companion.instance
+import com.example.composeemojilibrary.emoji.Emoji
 
-import android.app.Activity;
-import android.content.Context;
-import android.content.ContextWrapper;
-import android.content.res.Configuration;
-import android.content.res.TypedArray;
-import android.graphics.Paint;
-import android.graphics.Point;
-import android.graphics.Rect;
-import android.util.AttributeSet;
-import android.util.TypedValue;
-import android.view.KeyEvent;
-import android.view.View;
-import android.view.inputmethod.EditorInfo;
-import android.widget.EditText;
-import android.widget.PopupWindow;
-import android.widget.TextView;
-import androidx.annotation.AttrRes;
-import androidx.annotation.ColorInt;
-import androidx.annotation.ColorRes;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
-import java.util.ArrayList;
-import java.util.List;
-
-final class Utils {
-  static final String TAG = "Utils";
-
-  static final int DONT_UPDATE_FLAG = -1;
-
-  @NonNull static <T> T checkNotNull(@Nullable final T reference, final String message) {
-    if (reference == null) {
-      throw new IllegalArgumentException(message);
-    }
-
-    return reference;
-  }
-
-  static float initTextView(final TextView textView, final AttributeSet attrs) {
-    if (!textView.isInEditMode()) {
-      EmojiManager.getInstance().verifyInstalled();
-    }
-
-    final Paint.FontMetrics fontMetrics = textView.getPaint().getFontMetrics();
-    final float defaultEmojiSize = fontMetrics.descent - fontMetrics.ascent;
-
-    final float emojiSize;
-
-    if (attrs == null) {
-      emojiSize = defaultEmojiSize;
-    } else {
-      final TypedArray a = textView.getContext().obtainStyledAttributes(attrs, R.styleable.EmojiTextView);
-
-      try {
-        emojiSize = a.getDimension(R.styleable.EmojiTextView_emojiSize, defaultEmojiSize);
-      } finally {
-        a.recycle();
-      }
-    }
-
-    textView.setText(textView.getText());
-    return emojiSize;
-  }
-
-  static int dpToPx(@NonNull final Context context, final float dp) {
-    return Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp,
-        context.getResources().getDisplayMetrics()) + 0.5f);
-  }
-
-  static int getOrientation(final Context context) {
-    return context.getResources().getConfiguration().orientation;
-  }
-
-  static int getProperWidth(final Activity activity) {
-    final Rect rect = Utils.windowVisibleDisplayFrame(activity);
-    return Utils.getOrientation(activity) == Configuration.ORIENTATION_PORTRAIT ? rect.right : getScreenWidth(activity);
-  }
-
-  static boolean shouldOverrideRegularCondition(@NonNull final Context context, final EditText editText) {
-    if ((editText.getImeOptions() & EditorInfo.IME_FLAG_NO_EXTRACT_UI) == 0) {
-      return getOrientation(context) == Configuration.ORIENTATION_LANDSCAPE;
-    }
-
-    return false;
-  }
-
-  static int getProperHeight(final Activity activity) {
-    return Utils.windowVisibleDisplayFrame(activity).bottom;
-  }
-
-  static int getScreenWidth(@NonNull final Activity context) {
-    return dpToPx(context, context.getResources().getConfiguration().screenWidthDp);
-  }
-
-  @NonNull static Point locationOnScreen(@NonNull final View view) {
-    final int[] location = new int[2];
-    view.getLocationOnScreen(location);
-    return new Point(location[0], location[1]);
-  }
-
-  @NonNull static Rect windowVisibleDisplayFrame(@NonNull final Activity context) {
-    final Rect result = new Rect();
-    context.getWindow().getDecorView().getWindowVisibleDisplayFrame(result);
-    return result;
-  }
-
-  static void backspace(@NonNull final EditText editText) {
-    final KeyEvent event = new KeyEvent(0, 0, 0, KeyEvent.KEYCODE_DEL, 0, 0, 0, 0, KeyEvent.KEYCODE_ENDCALL);
-    editText.dispatchKeyEvent(event);
-  }
-
-  static List<IosEmoji> asListWithoutDuplicates(final IosEmoji[] emojis) {
-    final List<IosEmoji> result = new ArrayList<>(emojis.length);
-
-    for (final IosEmoji emoji : emojis) {
-      if (!emoji.isDuplicate()) {
-        result.add(emoji);
-      }
-    }
-
-    return result;
-  }
-
-  static void input(@NonNull final EditText editText, @Nullable final IosEmoji emoji) {
-    if (emoji != null) {
-      final int start = editText.getSelectionStart();
-      final int end = editText.getSelectionEnd();
-
-      if (start < 0) {
-        editText.append(emoji.getUnicode());
-      } else {
-        editText.getText().replace(Math.min(start, end), Math.max(start, end), emoji.getUnicode(), 0, emoji.getUnicode().length());
-      }
-    }
-  }
-
-  static Activity asActivity(@NonNull final Context context) {
-    Context result = context;
-
-    while (result instanceof ContextWrapper) {
-      if (result instanceof Activity) {
-        return (Activity) result;
-      }
-
-      result = ((ContextWrapper) result).getBaseContext();
-    }
-
-    throw new IllegalArgumentException("The passed Context is not an Activity.");
-  }
-
-  static void fixPopupLocation(@NonNull final PopupWindow popupWindow, @NonNull final Point desiredLocation) {
-    popupWindow.getContentView().post(new Runnable() {
-      @Override public void run() {
-        final Point actualLocation = locationOnScreen(popupWindow.getContentView());
-
-        if (!(actualLocation.x == desiredLocation.x && actualLocation.y == desiredLocation.y)) {
-          final int differenceX = actualLocation.x - desiredLocation.x;
-          final int differenceY = actualLocation.y - desiredLocation.y;
-
-          final int fixedOffsetX;
-          final int fixedOffsetY;
-
-          if (actualLocation.x > desiredLocation.x) {
-            fixedOffsetX = desiredLocation.x - differenceX;
-          } else {
-            fixedOffsetX = desiredLocation.x + differenceX;
-          }
-
-          if (actualLocation.y > desiredLocation.y) {
-            fixedOffsetY = desiredLocation.y - differenceY;
-          } else {
-            fixedOffsetY = desiredLocation.y + differenceY;
-          }
-
-          popupWindow.update(fixedOffsetX, fixedOffsetY, DONT_UPDATE_FLAG, DONT_UPDATE_FLAG);
+internal class Utils private constructor() {
+    companion object {
+        const val TAG = "Utils"
+        const val DONT_UPDATE_FLAG = -1
+        fun <T> checkNotNull(reference: T?, message: String): T {
+            requireNotNull(reference) { message }
+            return reference
         }
-      }
-    });
-  }
 
-  @ColorInt static int resolveColor(final Context context, @AttrRes final int resource, @ColorRes final int fallback) {
-    final TypedValue value = new TypedValue();
-    context.getTheme().resolveAttribute(resource, value, true);
-    final int resolvedColor;
+        fun initTextView(textView: TextView, attrs: AttributeSet?): Float {
+            if (!textView.isInEditMode) {
+                instance.verifyInstalled()
+            }
+            val fontMetrics = textView.paint.fontMetrics
+            val defaultEmojiSize = fontMetrics.descent - fontMetrics.ascent
+            val emojiSize: Float
+            emojiSize = if (attrs == null) {
+                defaultEmojiSize
+            } else {
+                val a = textView.context.obtainStyledAttributes(attrs, R.styleable.EmojiTextView)
+                try {
+                    a.getDimension(R.styleable.EmojiTextView_emojiSize, defaultEmojiSize)
+                } finally {
+                    a.recycle()
+                }
+            }
+            textView.text = textView.text
+            return emojiSize
+        }
 
-    if (value.resourceId != 0) {
-      resolvedColor = ContextCompat.getColor(context, value.resourceId);
-    } else {
-      resolvedColor = value.data;
+        fun dpToPx(context: Context, dp: Float): Int {
+            return Math.round(
+                TypedValue.applyDimension(
+                    TypedValue.COMPLEX_UNIT_DIP, dp,
+                    context.resources.displayMetrics
+                ) + 0.5f
+            )
+        }
+
+        fun getOrientation(context: Context): Int {
+            return context.resources.configuration.orientation
+        }
+
+        fun getProperWidth(activity: Activity): Int {
+            val rect = windowVisibleDisplayFrame(activity)
+            return if (getOrientation(activity) == Configuration.ORIENTATION_PORTRAIT) rect.right else getScreenWidth(
+                activity
+            )
+        }
+
+        fun shouldOverrideRegularCondition(context: Context, editText: EditText): Boolean {
+            return if (editText.imeOptions and EditorInfo.IME_FLAG_NO_EXTRACT_UI == 0) {
+                getOrientation(context) == Configuration.ORIENTATION_LANDSCAPE
+            } else false
+        }
+
+        fun getProperHeight(activity: Activity): Int {
+            return windowVisibleDisplayFrame(activity).bottom
+        }
+
+        fun getScreenWidth(context: Activity): Int {
+            return dpToPx(context, context.resources.configuration.screenWidthDp.toFloat())
+        }
+
+        fun locationOnScreen(view: View): Point {
+            val location = IntArray(2)
+            view.getLocationOnScreen(location)
+            return Point(location[0], location[1])
+        }
+
+        fun windowVisibleDisplayFrame(context: Activity): Rect {
+            val result = Rect()
+            context.window.decorView.getWindowVisibleDisplayFrame(result)
+            return result
+        }
+
+        fun backspace(editText: EditText) {
+            val event =
+                KeyEvent(0, 0, 0, KeyEvent.KEYCODE_DEL, 0, 0, 0, 0, KeyEvent.KEYCODE_ENDCALL)
+            editText.dispatchKeyEvent(event)
+        }
+
+        fun asListWithoutDuplicates(emojis: Array<Emoji>): List<Emoji> {
+            val result: MutableList<Emoji> = ArrayList(emojis.size)
+            for (emoji in emojis) {
+                if (!emoji.isDuplicate) {
+                    result.add(emoji)
+                }
+            }
+            return result
+        }
+
+        fun input(editText: EditText, emoji: Emoji) {
+            val start = editText.selectionStart
+            val end = editText.selectionEnd
+            if (start < 0) {
+                editText.append(emoji.unicode)
+            } else {
+                editText.text.replace(
+                    Math.min(start, end),
+                    Math.max(start, end),
+                    emoji.unicode,
+                    0,
+                    emoji.unicode.length
+                )
+            }
+        }
+
+        fun asActivity(context: Context): Activity {
+            var result: Context? = context
+            while (result is ContextWrapper) {
+                if (result is Activity) {
+                    return result
+                }
+                result = result.baseContext
+            }
+            throw IllegalArgumentException("The passed Context is not an Activity.")
+        }
+
+        fun fixPopupLocation(popupWindow: PopupWindow, desiredLocation: Point) {
+            popupWindow.contentView.post {
+                val actualLocation = locationOnScreen(popupWindow.contentView)
+                if (!(actualLocation.x == desiredLocation.x && actualLocation.y == desiredLocation.y)) {
+                    val differenceX = actualLocation.x - desiredLocation.x
+                    val differenceY = actualLocation.y - desiredLocation.y
+                    val fixedOffsetX: Int
+                    val fixedOffsetY: Int
+                    fixedOffsetX = if (actualLocation.x > desiredLocation.x) {
+                        desiredLocation.x - differenceX
+                    } else {
+                        desiredLocation.x + differenceX
+                    }
+                    fixedOffsetY = if (actualLocation.y > desiredLocation.y) {
+                        desiredLocation.y - differenceY
+                    } else {
+                        desiredLocation.y + differenceY
+                    }
+                    popupWindow.update(
+                        fixedOffsetX,
+                        fixedOffsetY,
+                        DONT_UPDATE_FLAG,
+                        DONT_UPDATE_FLAG
+                    )
+                }
+            }
+        }
+
+        @ColorInt
+        fun resolveColor(context: Context, @AttrRes resource: Int, @ColorRes fallback: Int): Int {
+            val value = TypedValue()
+            context.theme.resolveAttribute(resource, value, true)
+            val resolvedColor: Int
+            resolvedColor = if (value.resourceId != 0) {
+                ContextCompat.getColor(context, value.resourceId)
+            } else {
+                value.data
+            }
+            return if (resolvedColor != 0) {
+                resolvedColor
+            } else {
+                ContextCompat.getColor(context, fallback)
+            }
+        }
     }
 
-    if (resolvedColor != 0) {
-      return resolvedColor;
-    } else {
-      return ContextCompat.getColor(context, fallback);
+    init {
+        throw AssertionError("No instances.")
     }
-  }
-
-  private Utils() {
-    throw new AssertionError("No instances.");
-  }
 }
