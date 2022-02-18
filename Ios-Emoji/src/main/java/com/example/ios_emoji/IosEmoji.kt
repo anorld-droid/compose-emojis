@@ -8,6 +8,7 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.util.LruCache
 import com.example.composeemojilibrary.emoji.CacheKey
+import com.example.composeemojilibrary.emoji.Emoji
 import java.lang.ref.SoftReference
 
 
@@ -63,9 +64,9 @@ class IosEmoji : Emoji {
         this.y = y
     }
 
-    fun getDrawable(context: Context): Drawable {
+    override fun getDrawable(context: Context): Drawable {
         val key = CacheKey(x, y)
-        val bitmap: Bitmap = BITMAP_CACHE.get(key)
+        val bitmap: Bitmap? = BITMAP_CACHE.get(key)
         if (bitmap != null) {
             return BitmapDrawable(context.resources, bitmap)
         }
@@ -105,10 +106,8 @@ class IosEmoji : Emoji {
             BITMAP_CACHE.evictAll()
             for (i in 0 until NUM_STRIPS) {
                 val strip = STRIP_REFS[i].get() as Bitmap
-                if (strip != null) {
-                    strip.recycle()
-                    STRIP_REFS[i].clear()
-                }
+                strip.recycle()
+                STRIP_REFS[i].clear()
             }
         }
     }
