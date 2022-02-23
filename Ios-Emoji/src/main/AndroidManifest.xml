@@ -1,2 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest    package="com.example.ios_emoji"/>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.ios_emoji">
+
+    <application>
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.ComposeEmoji" />
+    </application>
+
+</manifest>

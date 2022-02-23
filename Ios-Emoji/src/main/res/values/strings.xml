@@ -8,4 +8,5 @@
     <string name="emoji_ios_category_objects">Objects</string>
     <string name="emoji_ios_category_symbols">Symbols</string>
     <string name="emoji_ios_category_flags">Flags</string>
+    <string name="app_name">Compose Emoji Implementation</string>
 </resources>

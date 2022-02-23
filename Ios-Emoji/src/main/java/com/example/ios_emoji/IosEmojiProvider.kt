@@ -16,21 +16,17 @@
  */
 package com.example.ios_emoji
 
-import com.example.composeemojilibrary.EmojiCategory
-import com.example.composeemojilibrary.EmojiProvider
 import com.example.ios_emoji.category.*
 
-class IosEmojiProvider() : EmojiProvider{
-    override fun getCategories(): Array<EmojiCategory> {
-        return arrayOf(
-            SmileysAndPeopleCategory(),
-            AnimalsAndNatureCategory(),
-            FoodAndDrinkCategory(),
-            ActivitiesCategory(),
-            TravelAndPlacesCategory(),
-            ObjectsCategory(),
-            SymbolsCategory(),
-            FlagsCategory()
-        )
-    }
+class IosEmojiProvider {
+    fun getCategories(): Array<IosEmojiCategory> = arrayOf(
+        SmileysAndPeopleCategory(),
+        AnimalsAndNatureCategory(),
+        FoodAndDrinkCategory(),
+        ActivitiesCategory(),
+        TravelAndPlacesCategory(),
+        ObjectsCategory(),
+        SymbolsCategory(),
+        FlagsCategory()
+    )
 }

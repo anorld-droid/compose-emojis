@@ -14,30 +14,28 @@
  * limitations under the License.
  *
  */
+package com.example.ios_emoji.category
 
-package com.example.ios_emoji.category;
+import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
+import com.example.ios_emoji.IosEmoji
+import com.example.ios_emoji.IosEmojiCategory
+import com.example.ios_emoji.R
 
-import androidx.annotation.DrawableRes;
-import androidx.annotation.NonNull;
-import androidx.annotation.StringRes;
+class AnimalsAndNatureCategory : IosEmojiCategory {
+    override val emojis: Array<IosEmoji>
+        get() = EMOJIS
 
-import com.example.composeemojilibrary.EmojiCategory;
-import com.example.ios_emoji.IosEmoji;
-import com.example.ios_emoji.R;
+    @get:DrawableRes
+    override val icon: Int
+        get() = R.drawable.emoji_ios_category_animalsandnature
 
+    @get:StringRes
+    override val categoryName: Int
+        get() = R.string.emoji_ios_category_animalsandnature
 
-@SuppressWarnings("PMD.MethodReturnsInternalArray") public final class AnimalsAndNatureCategory implements EmojiCategory {
-  private static final IosEmoji[] EMOJIS = CategoryUtils.INSTANCE.concatAll(AnimalsAndNatureCategoryChunk0.INSTANCE.get());
-
-  @Override @NonNull public IosEmoji[] getEmojis() {
-    return EMOJIS;
-  }
-
-  @Override @DrawableRes public int getIcon() {
-    return R.drawable.emoji_ios_category_animalsandnature;
-  }
-
-  @Override @StringRes public int getCategoryName() {
-    return R.string.emoji_ios_category_animalsandnature;
-  }
+    companion object {
+        private val EMOJIS: Array<IosEmoji> =
+            CategoryUtils.concatAll(AnimalsAndNatureCategoryChunk0.get())
+    }
 }

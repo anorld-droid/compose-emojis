@@ -14,30 +14,28 @@
  * limitations under the License.
  *
  */
+package com.example.ios_emoji.category
 
-package com.example.ios_emoji.category;
+import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
+import com.example.ios_emoji.IosEmoji
+import com.example.ios_emoji.IosEmojiCategory
+import com.example.ios_emoji.R
 
+class FoodAndDrinkCategory : IosEmojiCategory {
+    override val emojis: Array<IosEmoji>
+        get() = EMOJIS
 
-import androidx.annotation.DrawableRes;
-import androidx.annotation.NonNull;
-import androidx.annotation.StringRes;
+    @get:DrawableRes
+    override val icon: Int
+        get() = R.drawable.emoji_ios_category_foodanddrink
 
-import com.example.composeemojilibrary.EmojiCategory;
-import com.example.ios_emoji.IosEmoji;
-import com.example.ios_emoji.R;
+    @get:StringRes
+    override val categoryName: Int
+        get() = R.string.emoji_ios_category_foodanddrink
 
-@SuppressWarnings("PMD.MethodReturnsInternalArray") public final class FoodAndDrinkCategory implements EmojiCategory {
-  private static final IosEmoji[] EMOJIS = CategoryUtils.INSTANCE.concatAll(FoodAndDrinkCategoryChunk0.INSTANCE.get());
-
-  @Override @NonNull public IosEmoji[] getEmojis() {
-    return EMOJIS;
-  }
-
-  @Override @DrawableRes public int getIcon() {
-    return R.drawable.emoji_ios_category_foodanddrink;
-  }
-
-  @Override @StringRes public int getCategoryName() {
-    return R.string.emoji_ios_category_foodanddrink;
-  }
+    companion object {
+        private val EMOJIS: Array<IosEmoji> =
+            CategoryUtils.concatAll(FoodAndDrinkCategoryChunk0.get())
+    }
 }
